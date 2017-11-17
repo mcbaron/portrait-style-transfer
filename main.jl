@@ -3,7 +3,7 @@
 using Images, FileIO, ImageView, Colors, DataFrames
 # Include helper functions
 include("depend.jl")
-
+include("imageMorph.jl")
 in_path = "images/input/DSC_3305_Lisa_Passport_scale.png"
 ref_path = "images/reference/16.png"
 
@@ -32,8 +32,8 @@ else
 end
 
 if landmarked
-    lm_in = Array{Float16}(readtable("images/landmarks/DSC_3305_Lisa_Passport_scale.lm", separator=','))
-    lm_ref = Array{Float16}(readtable("images/landmarks/16.lm", separator=','))
+    lm_in = Array{Float32}(readtable("images/landmarks/DSC_3305_Lisa_Passport_scale.lm", separator=',', header=false))
+    lm_ref = Array{Float32}(readtable("images/landmarks/16.lm", separator=',', header=false))
 else
     # - Detect facial landmarks automatically for both input and reference image
     #        -> using dlib and Cxx.jl
@@ -45,6 +45,7 @@ end
 # Threshold and warp image + mask
 
 # We're aiming to warp the reference image to fit the input image.
+show_match = true
 im_refwarp, vx, vy = imageMorph(im_ref, im_in, lm_ref, lm_in)
 if show_match
     ImageView(im_refwarp + im_in)

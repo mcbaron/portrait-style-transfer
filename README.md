@@ -11,6 +11,7 @@ With a working installation of Julia, handily provided via the [JuliaPro project
 
 Update any packages that need updating, `Pkg.update()` at the REPL. This project requires adding the following Julia packages:
 - Images.jl
+- ImageSegmentation
 - Colors.jl
 - Cxx.jl (requires cmake 3.4.3+)
 - MATLAB.jl

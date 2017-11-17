@@ -57,32 +57,33 @@ function meshgrid(vx::AbstractVector{T}, vy::AbstractVector{T},
     vx = reshape(vx, 1, n, 1)
     vy = reshape(vy, m, 1, 1)
     vz = reshape(vz, 1, 1, o)
-    om = ones(Int, m)
-    on = ones(Int, n)
-    oo = ones(Int, o)
+    om = ones(Float32, m)
+    on = ones(Float32, n)
+    oo = ones(Float32, o)
     (vx[om, :, oo], vy[:, on, oo], vz[om, on, :])
 end
 
 export meshgrid
 
 function imWarp(img, dx, dy)
-    # use dx and dy as offset
+    # use dx and dy as offset maps
     nchannels, imheight, imwidth = size(img)
     height, width = size(dx)
 
-    xx, yy = meshgrid(1:imwidth, 1:imheight)
+    # xx, yy = meshgrid(1:imwidth, 1:imheight)
+    knots = ([x for x = 1:imheight], [y for y = 1:imwidth]);
     XX, YY = meshgrid(1:width, 1:height)
 
     # using offset
     XX = XX + dx
     YY = YY + dy
 
-    #mask = XX < 1 | XX > imwidth | YY < 1 | YY > imheight
-    XX = minimum([maximum([XX, 1]), imwidth])
-    YY = minimum([maximum([YY, 1]), imheight])
+    # mask = XX .< 1 .| XX .> imwidth .| YY .< 1 .| YY .> imheight
+    XX = min.(max.(XX, 1), imwidth)
+    YY = min.(max.(YY, 1), imheight)
 
     for i = 1:nchannels
-        itp = interpolate(img, BSpline(Linear()), OnGrid())
+        itp = interpolate(knots, img[i,:,:], Gridded(Linear()))
         imw[i,:,:] = itp[XX, YY]
     end
 

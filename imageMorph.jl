@@ -28,14 +28,14 @@ for i = 1:size(segs_src,1)
     ysum += weight.*y
 end
 x_norm = xsum ./ wsum
-y_norm = yxum ./ wsum
+y_norm = ysum ./ wsum
 vx = xx - x_norm
 vy = yy - y_norm
 
-vx[x_norm < 1] = 0
-vx[x_norm > m] = 0
-vy[y_norm < 1] = 0
-vy[y_norm > n] = 0
+vx[x_norm .< 1] = 0
+vx[x_norm .> m] = 0
+vy[y_norm .< 1] = 0
+vy[y_norm .> n] = 0
 
 im_warped = imWarp(image_dest, vx, vy)
 
@@ -54,7 +54,7 @@ function landmark2Seg(lmArray, height, width)
 
     nkeypoints = size(idx,1)
     segs = Array{Tuple}(nkeypoints+4, 2)
-    
+
     for i = 1:nkeypoints
         segs[i,1] = Tuple(lmArray[idx[i],:])
         segs[i,2] = Tuple(lmArray[idy[i],:])
@@ -90,7 +90,7 @@ function get_xy(u, v, line)
     pq = (q[1] - p[1], q[2] - p[2])
     len = sqrt(pq[1]^2 + pq[2]^2)
 
-    x = p[1] + u*pq[1] + (v*-pq[2])/ len
+    x = p[1] + u*pq[1] + (v*-pq[2])/len
     y = p[2] + u*pq[2] + (v*pq[1])/len
 
     return x,y
@@ -100,15 +100,16 @@ function get_weight(x, y, line)
     a=10
     b=1
     p=1
+    d=1
     u, v = get_uv(x, y, line)
 
     d1 = ((x-line[2][1]).^2 + (y-line[2][2]).^2 ).^ .5
     d2 = ((x-line[1][1]).^2 + (y-line[1][2]).^2 ).^ .5
-    dv = abs(v)
-    dv[u>1] = d1[u>1]
-    dv[u<0] = d2[u<0]
+    dv = abs.(v)
+    dv[u.>1] = d1[u.>1]
+    dv[u.<0] = d2[u.<0]
 
-    pq = (q[1] - p[1], q[2] - p[2])
+    pq = (line[2][1] - line[1][1], line[2][2] - line[1][2])
     len = sqrt(pq[1]^2 + pq[2]^2)
 
     return (len^p./(a+d)).^b
