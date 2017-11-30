@@ -237,7 +237,7 @@ function generate_gaussian_pyramid(im; min_size=15, max_levels=23, filter=[0.062
     end
 
     return (pyramid_bands, num_levels)
-end
+end 
 
 function generate_laplacian_pyramid(im; min_size=15, max_levels=23, filter=[0.0625; 0.25; 0.375; 0.25; 0.0625])
     # im = convert(Array{Float64}, copy(im))

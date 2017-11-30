@@ -13,7 +13,7 @@ masks_exist = true
 mask_in_path = "images/masks/DSC_3305_Lisa_Passport_scale.png"
 mask_ref_path = "images/masks/16.png"
 
-bg_ref_path = "images/bgs/16.png"
+bg_ref_path = "images/bgs/16.jpg"
 
 im_in = loadFloatImage(in_path)
 im_ref = loadFloatImage(ref_path)
@@ -84,18 +84,50 @@ gain_min = .9
 hist_trans = false
 
 # Transfer the background from the refernce image
-im_in = mask_in.*im_in + (1-mask_in)*loadFloatImage(bg_ref_path)
+im_in = mask_in.*im_in + (1-mask_in).*loadFloatImage(bg_ref_path)
 # transform to Lab colorspace, why isn't this working?
-im_in = cconvert(im_in, Lab)
-im_refwarp = cconvert(im_refwarp, Lab)
+im_in = convert(Lab, im_in)
+im_refwarp = convert(Lab, im_refwarp)
+nLevels = 8
+pyr_in = ImagePyramid(im_in, LaplacianPyramid(), max_levels = nLevels)
+pyr_ref = ImagePyramid(im_refwarp, LaplacianPyramid(), max_levels = nLevels)
 
-pyr_in = ImagePyramid(im_in, LaplacianPyramid(), max_levels = 8)
-pyr_ref = ImagePyramid(im_refwarp, LaplacianPyramid(), max_levels = 8)
+pyr_out = copy(pyr_in)
 
+for i = 1:nLevels - 1
+    r = 2^(i+2)
 
+    l_in = subband(pyr_in, i)
+    l_ref = subband(pyr_ref, i)
+    e_in = imfilter(l_in.^2, Kernel.gaussian(r, ceil(8*[r r]))
+    e_ref = imfilter(l_ref.^2, Kernel.gaussian(r, ceil(8*[r r])))
+    gain = (e_ex./(e_in+e_0)).^0.5
+
+    # Clamp gain
+    clamp!(gain, gain_min, gain_max)
+    l_new = l_in .* gain
+
+    if hist_trans # Probably able to be done with histmatch()
+        negs_r = red(l_in) < 0
+        negs_g = green(l_in) < 0
+        negs_b = blue(l_in) < 0
+        l_new_r = channelHistogramTransfer(abs(red(l_new)), abs(red(l_ref))
+        l_new_g = channelHistogramTransfer(abs(green(l_new)), abs(green(l_ref))
+        l_new_b = channelHistogramTransfer(abs(blue(l_new)), abs(blue(l_ref))
+        l_new_r[negs_r] = -1*l_new_r[negs_r]
+        l_new_g[negs_g] = -1*l_new_g[negs_g]
+        l_new_b[negs_b] = -1*l_new_b[negs_b]
+        l_new = RGB.(l_new_r, l_new_g, l_new_b)
+    end
+    update_subband(pyr_out, i, l_new)
+end
+
+in_out = toimage(pyr_out)
 
 # ----//---- Matting (background transfer)  ----//----
+im_out = mask_in.*im_out + (1-mask_in).*loadFloatImage(bg_ref_path)
 
 # ----//---- Eye highlight transfer ----//----
 
 # Save out
+save("images/output/DSC_3305_Lisa_Passport_scale_16.png",im_out)

@@ -80,3 +80,14 @@ function imWarp(img, dx, dy)
 end
 
 export imWarp
+
+function channelHistogramTransfer(dest_chan, source_chan)
+    sorted_source = sort(source_chan[:])
+    dest_idx = sortperm(dest_chan[:])
+    output_chan = zeros(size(dest_chan))
+    output_chan[dest_idx] = sorted_source
+
+    return output_chan
+end
+
+export channelHistogramTransfer

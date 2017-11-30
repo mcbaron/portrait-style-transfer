@@ -2,14 +2,14 @@ function imageMorph(image_in, image_dest, lm_in, lm_dest)
  # Inputs: image_in - the input image, to be warped/morphed to the destination image
  #         image_dest - the destination image.
  #         lm_in - the landmarks corresponding to the input image
- #         lm_dest - the landmakrs corresponding to the destination image
+ #         lm_dest - the landmarks corresponding to the destination image
  #
  #
  # Returns: im_warped - the input image aligned to the destination image
  #          vx - the x dimension warping map
  #          vy - the y dimension warping map
 
-# nch, n, m = size(image_in)
+
 n, m = size(image_in)
 xx, yy = meshgrid(1:m, 1:n)
 
@@ -38,7 +38,7 @@ vx[x_norm .> m] = 0
 vy[y_norm .< 1] = 0
 vy[y_norm .> n] = 0
 
-im_warped = imWarp(image_dest, vx, vy)
+im_warped = imWarp(image_in, vx, vy)
 
 return im_warped, vx, vy
 end
