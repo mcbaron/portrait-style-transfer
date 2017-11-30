@@ -9,7 +9,8 @@ function imageMorph(image_in, image_dest, lm_in, lm_dest)
  #          vx - the x dimension warping map
  #          vy - the y dimension warping map
 
-nch, n, m = size(image_in)
+# nch, n, m = size(image_in)
+n, m = size(image_in)
 xx, yy = meshgrid(1:m, 1:n)
 
 # construct segments between each landmark point
