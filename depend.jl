@@ -66,24 +66,6 @@ end
 
 export meshgrid
 
-# function imWarp(img, dx, dy)
-#   nchannels, imheight, imwidth = size(img)
-#   imgw = copy(img)
-#   for i = 1:nchannels
-#     itp = interpolate(img[i,:,:], BSpline(Linear()), OnGrid())
-#     inds = indices(img[i,:,:])
-#     rng = extrema.(inds)
-#     imw = similar(img[i,:,:], eltype(itp))
-#     for I in CartesianRange(inds)
-#       dxi, dyi = dx[I], dy[I]
-#       y, x = clamp(I[1]+dyi, rng[1]...), clamp(I[2]+dxi, rng[2]...)
-#       imw[I] = itp[y, x]
-#     end
-#     imgw[i,:,:] = imw
-#   end
-#   return imgw
-# end
-
 function imWarp(img, dx, dy)
     itp = interpolate(img, BSpline(Linear()), OnGrid())
     inds = indices(img)

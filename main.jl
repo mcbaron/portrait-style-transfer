@@ -87,9 +87,12 @@ hist_trans = false
 im_in = mask_in.*im_in + (1-mask_in)*loadFloatImage(bg_ref_path)
 # transform to Lab colorspace, why isn't this working?
 im_in = cconvert(im_in, Lab)
-im_ref = cconvert(im_ref, Lab)
+im_refwarp = cconvert(im_refwarp, Lab)
 
-pyramid = ImagePyramid(im_in, LaplacianPyramid(), max_levels = 6)
+pyr_in = ImagePyramid(im_in, LaplacianPyramid(), max_levels = 8)
+pyr_ref = ImagePyramid(im_refwarp, LaplacianPyramid(), max_levels = 8)
+
+
 
 # ----//---- Matting (background transfer)  ----//----
 

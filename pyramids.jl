@@ -212,7 +212,8 @@ function band_reduce(im; filter=[0.0625; 0.25; 0.375; 0.25; 0.0625])
 end
 
 function band_expand(im; filter=[0.0625; 0.25; 0.375; 0.25; 0.0625])
-    new_im = zeros((size(im, 1)*2, size(im, 2)*2))
+    m, n = size(im)
+    new_im = RGB.(zeros(m*2, n*2), zeros(m*2, n*2), zeros(m*2, n*2))
     new_im[1:2:end, 1:2:end] = im
 
     new_im_r = convolve_reflect(float64.(red(new_im)), filter)
@@ -244,15 +245,14 @@ function generate_laplacian_pyramid(im; min_size=15, max_levels=23, filter=[0.06
     pyramid_bands = Dict{Integer, Array}()
 
     im_dims = collect(size(im))
-
     num_levels = min(max_levels, ceil(Int, log2(minimum(im_dims)) - log2(min_size)))
-
-    filter_offset::Int = (length(filter)-1)/2
+    filter_offset = Int((length(filter)-1)/2)
 
     for i = 1:num_levels
         reduced_im = band_reduce(im, filter=filter)
         next_im = band_expand(reduced_im)
-        diff_im = im - next_im
+        m, n = size(im)
+        diff_im = im - next_im[1:m, 1:n]
 
         pyramid_bands[i-1] = diff_im
 
