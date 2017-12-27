@@ -91,3 +91,62 @@ function channelHistogramTransfer(dest_chan, source_chan)
 end
 
 export channelHistogramTransfer
+
+
+function extract_L(image_in)
+  return [x.l for x in image_in]
+end
+export extract_L
+
+
+"""
+```
+pyramid = laplacian_pyramid(img, n_scales, sigma)
+```
+
+Returns a  laplacian pyramid of scales `n_scales`, each filtered by
+a gaussian kernel of increasing σ.
+
+"""
+function laplacian_pyramid(img::AbstractArray{T,N}, n_scales::Int) where {T,N}
+
+  # To guarantee inferability, we make sure that we do at least one
+  # round of smoothing
+  sigma = 2
+  kerng = KernelFactors.IIRGaussian(sigma)
+  kern = ntuple(d->kerng, Val{N})
+  img_smoothed = imfilter(img, kern, Images.NA())
+  pyramid = typeof(img_smoothed)[img - img_smoothed]
+  prev = img_smoothed
+  for i in 2:n_scales
+    sigma = 2^i
+    kerng = KernelFactors.IIRGaussian(sigma)
+    kern = ntuple(d->kerng, Val{N})
+    img_smoothed = imfilter(prev, kern, Images.NA())
+    img_diff = prev - img_smoothed
+
+    push!(pyramid, img_diff)
+    prev = img_smoothed
+  end
+  push!(pyramid, img_smoothed) # attach the residual as the last layer
+  return pyramid
+end
+
+export laplacian_pyramid
+
+function reconstruct_laplacian_pyramid(pyramid)
+  n_scales = length(pyramid)
+  img_out = pyramid[end]
+  for i = n_scales-1:-1:1
+    img_next = pyramid[i]
+    img_out += img_next
+  end
+  return img_out
+end
+
+export reconstruct_laplacian_pyramid
+
+function pyramid_scale(img, downsample)
+    sz_next = map(s->ceil(Int, s/downsample), size(img))
+    imresize(img, sz_next)
+end
